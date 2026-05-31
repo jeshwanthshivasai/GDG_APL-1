@@ -1,18 +1,33 @@
+let currentAudio = null;
+
 /**
- * sarvam.js — Sarvam AI Text-to-Speech API helper
- * Converts text into natural, Indian-accented speech using Sarvam's Bulbul model.
+ * Stop any active Sarvam audio playback
  */
+export function stopSarvamAudio() {
+  if (currentAudio) {
+    try {
+      currentAudio.pause();
+    } catch (e) {
+      console.warn('Error pausing audio:', e);
+    }
+    currentAudio = null;
+  }
+}
 
 /**
  * Speak text using the Sarvam AI TTS API
  * @param {string} text — Text to convert to speech
  * @param {string} apiKey — Sarvam AI subscription key
+ * @param {Function} [onEndedCallback] — Callback when audio ends
  * @returns {Promise<boolean>} True if successful, false otherwise (triggers fallback)
  */
-export async function speakWithSarvam(text, apiKey) {
+export async function speakWithSarvam(text, apiKey, onEndedCallback) {
   if (!apiKey || apiKey === 'PASTE_YOUR_SARVAM_KEY_HERE') {
     return false;
   }
+
+  // Stop any active audio before starting a new one
+  stopSarvamAudio();
 
   // Strip markdown styling to keep speech natural
   const cleanText = text
@@ -48,10 +63,18 @@ export async function speakWithSarvam(text, apiKey) {
     if (data.audios && data.audios[0]) {
       const base64Audio = data.audios[0];
       const audioUrl = `data:audio/mp3;base64,${base64Audio}`;
-      const audio = new Audio(audioUrl);
+      
+      currentAudio = new Audio(audioUrl);
+      
+      if (onEndedCallback) {
+        currentAudio.onended = () => {
+          onEndedCallback();
+          currentAudio = null;
+        };
+      }
       
       // Attempt to play the audio
-      await audio.play();
+      await currentAudio.play();
       return true;
     }
   } catch (err) {

@@ -6,7 +6,7 @@
 import { CameraManager } from './camera.js';
 import { VoiceManager } from './voice.js';
 import { initGemini, analyzeWithVoiceAndCamera, analyzeVoiceOnly, isReady, setGeminiModel, getGeminiModel } from './gemini.js';
-import { speakWithSarvam } from './sarvam.js';
+import { speakWithSarvam, stopSarvamAudio } from './sarvam.js';
 import * as UI from './ui.js';
 
 // ─── Variables & Configuration ────────────────────────────────
@@ -130,10 +130,22 @@ async function processQuery(transcript) {
  * Speak the AI response using Sarvam AI (primary) or Web Speech Synthesis (fallback)
  */
 async function speakResponse(text) {
+  const btnStop = document.getElementById('btn-stop-audio');
+  
+  const hideStopButton = () => {
+    if (btnStop) btnStop.style.display = 'none';
+  };
+
+  const showStopButton = () => {
+    if (btnStop) btnStop.style.display = 'inline-flex';
+  };
+
   // 1. Try Sarvam AI TTS if key is present
   if (activeSarvamKey) {
-    const success = await speakWithSarvam(text, activeSarvamKey);
+    showStopButton();
+    const success = await speakWithSarvam(text, activeSarvamKey, hideStopButton);
     if (success) return; // Speak succeeded
+    hideStopButton(); // Fallback failed
   }
 
   // 2. Fallback to native Web Speech Synthesis
@@ -155,6 +167,10 @@ async function speakResponse(text) {
   utterance.rate = 1.0;
   utterance.pitch = 1.0;
   utterance.volume = 0.8;
+
+  utterance.onstart = showStopButton;
+  utterance.onend = hideStopButton;
+  utterance.onerror = hideStopButton;
 
   window.speechSynthesis.speak(utterance);
 }
@@ -288,6 +304,34 @@ function setupButtons() {
       } else {
         UI.showError('Invalid Gemini API Key');
       }
+    });
+  }
+
+  // Mute/Stop speech button
+  const btnStopAudio = document.getElementById('btn-stop-audio');
+  if (btnStopAudio) {
+    btnStopAudio.addEventListener('click', () => {
+      stopSarvamAudio();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      btnStopAudio.style.display = 'none';
+    });
+  }
+
+  // New Chat button
+  const btnNewChat = document.getElementById('btn-new-chat');
+  if (btnNewChat) {
+    btnNewChat.addEventListener('click', () => {
+      // 1. Stop any speaking
+      if (btnStopAudio) btnStopAudio.click();
+      
+      // 2. Reset UI panels
+      UI.resetTranscript();
+      UI.hideResponse();
+      
+      // 3. Reset state
+      UI.setStatus('ready', `Ready (${activeGeminiModel})`);
     });
   }
 
