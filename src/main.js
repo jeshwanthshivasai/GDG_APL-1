@@ -257,6 +257,40 @@ function setupButtons() {
     closeSettings();
   });
 
+  // Setup overlay save button
+  const btnSaveSetup = document.getElementById('btn-save-setup');
+  if (btnSaveSetup) {
+    btnSaveSetup.addEventListener('click', () => {
+      const inputSetupGemini = document.getElementById('setup-gemini-key');
+      const inputSetupSarvam = document.getElementById('setup-sarvam-key');
+      
+      const geminiVal = inputSetupGemini.value.trim();
+      const sarvamVal = inputSetupSarvam.value.trim();
+      
+      if (!geminiVal) {
+        UI.showError('Gemini API key is required!');
+        return;
+      }
+      
+      localStorage.setItem('fixit_gemini_key', geminiVal);
+      activeGeminiKey = geminiVal;
+      
+      if (sarvamVal) {
+        localStorage.setItem('fixit_sarvam_key', sarvamVal);
+        activeSarvamKey = sarvamVal;
+      }
+      
+      // Attempt restart
+      if (initGemini(activeGeminiKey)) {
+        UI.showSetupOverlay(false);
+        setupVoiceCallbacks();
+        UI.setStatus('ready', `Ready (${activeGeminiModel})`);
+      } else {
+        UI.showError('Invalid Gemini API Key');
+      }
+    });
+  }
+
   // Keyboard shortcut: Space to toggle mic
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && e.target === document.body) {
