@@ -63,8 +63,8 @@ body {
   font-family: var(--font-family);
   background: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100vh;
-  overflow-x: hidden;
+  height: 100vh;
+  overflow: hidden;
   background-image:
     radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(56, 189, 248, 0.06) 0%, transparent 50%),
@@ -172,10 +172,11 @@ body {
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   max-width: 1440px;
   margin: 0 auto;
   padding: 0 1rem;
+  overflow: hidden;
 }
 
 /* --- Header --- */
@@ -461,6 +462,13 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  transition: flex 0.3s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.3s ease;
+}
+
+/* If the center panel contains a visible AI response, shrink the transcript area height */
+.center-panel:has(.response-area:not(.hidden)) .transcript-area {
+  flex: 0 0 auto;
+  max-height: 120px;
 }
 
 .transcript-placeholder {
@@ -555,7 +563,7 @@ body {
 .response-area {
   border-top: 1px solid var(--border-glass);
   padding: 1.25rem 1.5rem;
-  max-height: 50%;
+  flex: 1; /* Grow to fill all available space */
   overflow-y: auto;
   animation: slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -902,6 +910,16 @@ body {
 
 /* --- Responsive --- */
 @media (max-width: 1024px) {
+  body {
+    height: auto;
+    overflow: auto;
+  }
+  
+  .app {
+    height: auto;
+    overflow: auto;
+  }
+
   .main-content {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: auto 1fr;
