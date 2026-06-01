@@ -1123,7 +1123,7 @@ body {
 .onboarding-tooltip {
   position: fixed;
   z-index: 10002;
-  background: var(--bg-card);
+  background: #151c2b; /* Solid opaque color to prevent background bleed-through */
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   padding: 0;
@@ -1132,6 +1132,10 @@ body {
   transform: translateY(10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
   overflow: hidden;
+}
+
+.light-theme .onboarding-tooltip {
+  background: #ffffff; /* Solid opaque color for light theme */
 }
 
 .onboarding-tooltip.visible {
