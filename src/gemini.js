@@ -5,7 +5,7 @@
 
 import { GoogleGenAI } from '@google/genai';
 
-const SYSTEM_PROMPT = `You are FixIt AI, an expert product support technician and diagnostic agent. You help customers troubleshoot and fix issues with their electronic devices, appliances, and tech products.
+const SYSTEM_PROMPT = `You are DAIY, an expert product support technician and diagnostic agent. You help customers troubleshoot and fix issues with their electronic devices, appliances, and tech products.
 
 BEHAVIOR:
 - Be warm, professional, and reassuring. Customers are often frustrated — calm them down.

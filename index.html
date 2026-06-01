@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FixIt AI — Voice + Camera Support Agent</title>
+  <title>DAIY — Voice + Camera Support Agent</title>
   <meta name="description" content="AI-powered customer support agent that diagnoses issues through voice and camera in real-time using Google Gemini." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,7 +15,7 @@
   <div id="setup-overlay" class="setup-overlay hidden">
     <div class="setup-card">
       <div class="setup-icon">⚙️</div>
-      <h2>Launch FixIt AI</h2>
+      <h2>Launch DAIY</h2>
       <p>Enter your API key below to unlock the voice + camera agent.</p>
       
       <div class="setup-inputs" style="display: flex; flex-direction: column; gap: 1rem; margin: 1.5rem 0; text-align: left;">
@@ -42,10 +42,17 @@
     <header class="app-header">
       <div class="header-left">
         <div class="logo">
-          <span class="logo-icon">🔧</span>
-          <h1>FixIt <span class="accent">AI</span></h1>
+          <svg class="logo-svg" width="98" height="36" viewBox="0 0 186 69" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 0.000106812H41.1429V6.85725H48V61.7144H41.1429V68.5715H0V0.000106812ZM27.4286 48.0001H34.2857V20.5715H27.4286V13.7144H13.7143V54.8572H27.4286V48.0001ZM150.946 48.0001H144.089V41.143H137.232V34.2858H130.375V0.000106812H144.089V27.4287H150.946V34.2858H164.661V27.4287H171.518V0.000106812H185.232V34.2858H178.375V41.143H171.518V48.0001H164.661V68.5715H150.946V48.0001Z" fill="currentColor"/>
+            <path d="M54.875 20.5715H61.7321V13.7144H68.5893V6.85725H75.4464V0.000106812H82.3036V6.85725H89.1607V13.7144H96.0179V20.5715H102.875V68.5715H89.1607V54.8572H68.5893V68.5715H54.875V20.5715ZM68.5893 41.143H89.1607V27.4287H82.3036V20.5715H75.4464V27.4287H68.5893V41.143ZM109.75 0.000106812H123.464V68.5715H109.75V0.000106812Z" fill="url(#paint0_linear_452_5)"/>
+            <defs>
+              <linearGradient id="paint0_linear_452_5" x1="96.0625" y1="-0.428467" x2="96.0625" y2="68.5715" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00FFBB"/>
+                <stop offset="1" stop-color="#7300FF"/>
+              </linearGradient>
+            </defs>
+          </svg>
         </div>
-        <span class="badge">Multimodal Agent</span>
       </div>
       <div class="header-right">
         <button class="btn-icon" id="btn-theme-toggle" title="Toggle Theme" style="margin-right: 0.5rem;">
@@ -161,7 +168,7 @@
               <span>🤖</span>
             </div>
             <div>
-              <div class="response-label">FixIt AI Diagnosis</div>
+              <div class="response-label">DAIY Diagnosis</div>
               <div class="response-meta" id="response-meta"></div>
             </div>
           </div>

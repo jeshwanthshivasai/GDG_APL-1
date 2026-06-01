@@ -223,18 +223,10 @@ body {
   gap: 0.5rem;
 }
 
-.logo-icon {
-  font-size: 1.5rem;
-}
-
-.logo h1 {
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.accent {
-  color: var(--accent);
+.logo-svg {
+  height: 28px;
+  width: auto;
+  display: block;
 }
 
 .badge {

@@ -10,9 +10,9 @@ import { speakWithSarvam, stopSarvamAudio } from './sarvam.js';
 import * as UI from './ui.js';
 
 // ─── Variables & Configuration ────────────────────────────────
-let activeGeminiKey = localStorage.getItem('fixit_gemini_key') || import.meta.env.VITE_GEMINI_API_KEY;
-let activeSarvamKey = localStorage.getItem('fixit_sarvam_key') || import.meta.env.VITE_SARVAM_API_KEY;
-let activeGeminiModel = localStorage.getItem('fixit_gemini_model') || import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash';
+let activeGeminiKey = localStorage.getItem('daiy_gemini_key') || localStorage.getItem('fixit_gemini_key') || import.meta.env.VITE_GEMINI_API_KEY;
+let activeSarvamKey = localStorage.getItem('daiy_sarvam_key') || localStorage.getItem('fixit_sarvam_key') || import.meta.env.VITE_SARVAM_API_KEY;
+let activeGeminiModel = localStorage.getItem('daiy_gemini_model') || localStorage.getItem('fixit_gemini_model') || import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash';
 
 const camera = new CameraManager();
 const voice = new VoiceManager();
@@ -40,7 +40,7 @@ function applyTheme(theme) {
  */
 function init() {
   // Load theme preference
-  const savedTheme = localStorage.getItem('fixit_theme') || 'dark';
+  const savedTheme = localStorage.getItem('daiy_theme') || localStorage.getItem('fixit_theme') || 'dark';
   applyTheme(savedTheme);
 
   // Load configuration
@@ -64,7 +64,7 @@ function init() {
   // 4. Set initial state
   UI.setStatus('ready', 'Ready');
 
-  console.log('🔧 FixIt AI initialized with model:', activeGeminiModel);
+  console.log('🔧 DAIY initialized with model:', activeGeminiModel);
 }
 
 /**
@@ -237,7 +237,7 @@ function setupButtons() {
     btnThemeToggle.addEventListener('click', () => {
       const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      localStorage.setItem('fixit_theme', newTheme);
+      localStorage.setItem('daiy_theme', newTheme);
       applyTheme(newTheme);
     });
   }
@@ -255,9 +255,9 @@ function setupButtons() {
 
   // Open settings
   btnSettings.addEventListener('click', () => {
-    inputGeminiKey.value = localStorage.getItem('fixit_gemini_key') || '';
+    inputGeminiKey.value = localStorage.getItem('daiy_gemini_key') || localStorage.getItem('fixit_gemini_key') || '';
     selectGeminiModel.value = getGeminiModel();
-    inputSarvamKey.value = localStorage.getItem('fixit_sarvam_key') || '';
+    inputSarvamKey.value = localStorage.getItem('daiy_sarvam_key') || localStorage.getItem('fixit_sarvam_key') || '';
     dialogSettings.showModal();
   });
 
@@ -274,21 +274,23 @@ function setupButtons() {
 
     // Store keys in LocalStorage
     if (newGeminiKey) {
-      localStorage.setItem('fixit_gemini_key', newGeminiKey);
+      localStorage.setItem('daiy_gemini_key', newGeminiKey);
       activeGeminiKey = newGeminiKey;
     } else {
+      localStorage.removeItem('daiy_gemini_key');
       localStorage.removeItem('fixit_gemini_key');
       activeGeminiKey = import.meta.env.VITE_GEMINI_API_KEY;
     }
 
-    localStorage.setItem('fixit_gemini_model', newModel);
+    localStorage.setItem('daiy_gemini_model', newModel);
     activeGeminiModel = newModel;
     setGeminiModel(newModel);
 
     if (newSarvamKey) {
-      localStorage.setItem('fixit_sarvam_key', newSarvamKey);
+      localStorage.setItem('daiy_sarvam_key', newSarvamKey);
       activeSarvamKey = newSarvamKey;
     } else {
+      localStorage.removeItem('daiy_sarvam_key');
       localStorage.removeItem('fixit_sarvam_key');
       activeSarvamKey = import.meta.env.VITE_SARVAM_API_KEY;
     }
@@ -321,11 +323,11 @@ function setupButtons() {
         return;
       }
       
-      localStorage.setItem('fixit_gemini_key', geminiVal);
+      localStorage.setItem('daiy_gemini_key', geminiVal);
       activeGeminiKey = geminiVal;
       
       if (sarvamVal) {
-        localStorage.setItem('fixit_sarvam_key', sarvamVal);
+        localStorage.setItem('daiy_sarvam_key', sarvamVal);
         activeSarvamKey = sarvamVal;
       }
       
