@@ -1237,3 +1237,15 @@ body {
   }
 }
 
+.onboarding-welcome-logo {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 0.35rem;
+}
+
+.onboarding-welcome-logo svg {
+  height: 28px;
+  width: auto;
+}
+
