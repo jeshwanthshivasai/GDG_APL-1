@@ -5,6 +5,8 @@
 
 const ONBOARDED_KEY = 'daiy_onboarded';
 
+import { saveProfile } from './profile.js';
+
 const STEPS = [
   {
     target: null, // Welcome splash — no target element
@@ -75,6 +77,18 @@ function createOverlay() {
         </div>
         <h3 class="onboarding-title" id="onboarding-title"></h3>
         <p class="onboarding-desc" id="onboarding-desc"></p>
+        
+        <!-- Onboarding Profile Form -->
+        <div class="onboarding-form hidden" id="onboarding-form">
+          <div class="form-group">
+            <label for="onboarding-name">Your Name</label>
+            <input type="text" id="onboarding-name" placeholder="E.g., John Doe" autocomplete="off" />
+          </div>
+          <div class="form-group">
+            <label for="onboarding-email">Email Address</label>
+            <input type="email" id="onboarding-email" placeholder="E.g., john@example.com" autocomplete="off" />
+          </div>
+        </div>
       </div>
       <div class="onboarding-footer">
         <div class="onboarding-dots" id="onboarding-dots"></div>
@@ -90,7 +104,24 @@ function createOverlay() {
 
   // Wire up buttons
   document.getElementById('onboarding-skip').addEventListener('click', completeOnboarding);
-  document.getElementById('onboarding-next').addEventListener('click', nextStep);
+  
+  // Custom click handler to save profile data on step 0
+  document.getElementById('onboarding-next').addEventListener('click', () => {
+    if (currentStep === 0) {
+      const nameInput = document.getElementById('onboarding-name');
+      const emailInput = document.getElementById('onboarding-email');
+      const nameVal = nameInput ? nameInput.value.trim() : '';
+      const emailVal = emailInput ? emailInput.value.trim() : '';
+      
+      saveProfile({
+        name: nameVal || 'Guest User',
+        email: emailVal,
+        avatarColor: '#6366f1' // default
+      });
+    }
+    nextStep();
+  });
+
   document.getElementById('onboarding-backdrop').addEventListener('click', (e) => {
     e.stopPropagation();
   });
@@ -107,6 +138,7 @@ function showStep(index) {
   const tooltip = document.getElementById('onboarding-tooltip');
   const dotsContainer = document.getElementById('onboarding-dots');
   const welcomeImage = document.getElementById('onboarding-welcome-image');
+  const onboardingForm = document.getElementById('onboarding-form');
 
   // Update text
   if (step.titleHtml) {
@@ -116,18 +148,20 @@ function showStep(index) {
   }
   desc.textContent = step.description;
 
-  // Toggle welcome logo image
+  // Toggle welcome logo image & profile inputs form
   if (welcomeImage) {
     if (step.showWelcomeLogo) {
       welcomeImage.classList.remove('hidden');
+      if (onboardingForm) onboardingForm.classList.remove('hidden');
     } else {
       welcomeImage.classList.add('hidden');
+      if (onboardingForm) onboardingForm.classList.add('hidden');
     }
   }
 
   // Update button text
   if (index === 0) {
-    nextBtn.textContent = 'Take a Tour 🚀';
+    nextBtn.textContent = 'Save & Start Tour 🚀';
   } else if (index === STEPS.length - 1) {
     nextBtn.textContent = 'Got it! ✨';
   } else {
