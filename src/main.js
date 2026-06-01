@@ -7,8 +7,9 @@ import { CameraManager } from './camera.js';
 import { VoiceManager } from './voice.js';
 import { initGemini, analyzeWithVoiceAndCamera, analyzeVoiceOnly, isReady, setGeminiModel, getGeminiModel } from './gemini.js';
 import { speakWithSarvam, stopSarvamAudio } from './sarvam.js';
-import { initAnalytics, trackQuery } from './analytics.js';
+import { initAnalytics, trackQuery, updateAnalyticsProfile } from './analytics.js';
 import { startOnboarding } from './onboarding.js';
+import { loadProfile, saveProfile } from './profile.js';
 import * as UI from './ui.js';
 
 // ─── Variables & Configuration ────────────────────────────────
@@ -46,6 +47,9 @@ function init() {
   const savedTheme = localStorage.getItem('daiy_theme') || 'dark';
   applyTheme(savedTheme);
 
+  // 1.1 Initialize header profile UI
+  updateHeaderAvatar();
+
   // 2. Load configuration
   setGeminiModel(activeGeminiModel);
 
@@ -71,6 +75,12 @@ function init() {
 
   // 8. Show onboarding tour for first-time users
   startOnboarding();
+
+  // 9. Listen for profile changes to sync with header and analytics
+  window.addEventListener('profile-updated', (e) => {
+    updateHeaderAvatar();
+    updateAnalyticsProfile(e.detail);
+  });
 
   console.log('🔧 DAIY initialized with model:', activeGeminiModel);
 }
@@ -288,7 +298,95 @@ function setupButtons() {
       btnMic.click();
     }
   });
+
+  // Profile dialog event wiring
+  const btnProfile = document.getElementById('btn-profile');
+  const profileDialog = document.getElementById('profile-dialog');
+  const btnCloseProfile = document.getElementById('btn-close-profile');
+  const btnCancelProfile = document.getElementById('btn-cancel-profile');
+  const btnSaveProfile = document.getElementById('btn-save-profile');
+  const inputProfileName = document.getElementById('input-profile-name');
+  const inputProfileEmail = document.getElementById('input-profile-email');
+  const colorPicker = document.getElementById('profile-color-picker');
+
+  if (btnProfile && profileDialog) {
+    let selectedColor = '#6366f1';
+
+    // Set up color swatch selection
+    if (colorPicker) {
+      colorPicker.addEventListener('click', (e) => {
+        const swatch = e.target.closest('.color-swatch');
+        if (!swatch) return;
+
+        colorPicker.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        selectedColor = swatch.dataset.color || '#6366f1';
+      });
+    }
+
+    // Open modal & fill current values
+    btnProfile.addEventListener('click', () => {
+      const profile = loadProfile();
+      inputProfileName.value = profile.name === 'Guest User' ? '' : profile.name;
+      inputProfileEmail.value = profile.email || '';
+      selectedColor = profile.avatarColor || '#6366f1';
+
+      if (colorPicker) {
+        colorPicker.querySelectorAll('.color-swatch').forEach(s => {
+          s.classList.toggle('active', s.dataset.color === selectedColor);
+        });
+      }
+
+      profileDialog.showModal();
+    });
+
+    const closeDialog = () => {
+      profileDialog.close();
+    };
+
+    if (btnCloseProfile) btnCloseProfile.addEventListener('click', closeDialog);
+    if (btnCancelProfile) btnCancelProfile.addEventListener('click', closeDialog);
+
+    // Save changes
+    if (btnSaveProfile) {
+      btnSaveProfile.addEventListener('click', () => {
+        const nameVal = inputProfileName.value.trim() || 'Guest User';
+        const emailVal = inputProfileEmail.value.trim();
+
+        saveProfile({
+          name: nameVal,
+          email: emailVal,
+          avatarColor: selectedColor
+        });
+
+        closeDialog();
+      });
+    }
+  }
 }
 
 // ─── Launch ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', init);
+
+/**
+ * Update the profile avatar initials and background color in the header.
+ */
+function updateHeaderAvatar() {
+  const profile = loadProfile();
+  const initialsSpan = document.getElementById('header-avatar-initials');
+  const avatarCircle = document.getElementById('header-avatar-circle');
+
+  if (initialsSpan && avatarCircle) {
+    // Extract initials: e.g. "Guest User" -> "GU", "John Doe" -> "JD"
+    const words = profile.name.trim().split(/\s+/);
+    let initials = '?';
+    if (words.length > 0) {
+      initials = words[0][0];
+      if (words.length > 1) {
+        initials += words[words.length - 1][0];
+      }
+    }
+    initialsSpan.textContent = initials.substring(0, 2);
+    avatarCircle.style.backgroundColor = profile.avatarColor || '#6366f1';
+  }
+}

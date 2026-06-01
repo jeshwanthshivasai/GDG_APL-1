@@ -55,27 +55,16 @@ service cloud.firestore {
 // --- Validation Functions ---
 
 function isValidSessionCreate(data) {
-  return data.keys().hasAll(['sessionId', 'timestamp', 'userAgent', 'language',
-                             'screenSize', 'viewportSize', 'platform',
-                             'timezone', 'darkMode', 'cameraUsed',
-                             'queriesCount', 'queries']) &&
+  return data.keys().hasAll(['sessionId', 'timestamp', 'queriesCount', 'queries']) &&
          data.sessionId is string && data.sessionId.size() > 0 && data.sessionId.size() <= 50 &&
          data.timestamp is string && data.timestamp.size() <= 30 &&
-         data.userAgent is string && data.userAgent.size() <= 500 &&
-         data.language is string && data.language.size() <= 10 &&
-         data.screenSize is string && data.screenSize.size() <= 20 &&
-         data.viewportSize is string && data.viewportSize.size() <= 20 &&
-         data.platform is string && data.platform.size() <= 50 &&
-         data.timezone is string && data.timezone.size() <= 100 &&
-         data.darkMode is bool &&
-         data.cameraUsed is bool &&
          data.queriesCount is number && data.queriesCount >= 0 &&
-         data.queries is list && data.queries.size() <= 50;
+         data.queries is list && data.queries.size() <= 100;
 }
 
 function isValidSessionUpdate(data) {
   return data.queriesCount is number && data.queriesCount >= 0 &&
-         data.queries is list && data.queries.size() <= 50 &&
+         data.queries is list && data.queries.size() <= 100 &&
          // Immutable fields cannot change
          data.sessionId == resource.data.sessionId &&
          data.timestamp == resource.data.timestamp;

@@ -7,7 +7,7 @@
   <meta name="description" content="AI-powered customer support agent that diagnoses issues through voice and camera in real-time using Google Gemini." />
 
   <!-- Favicon -->
-  <link rel="icon" type="image/svg+xml" href="/DAIY.svg" />
+  <link rel="icon" type="image/svg+xml" href="/DAIY-notagline.svg" />
   <link rel="alternate icon" type="image/png" href="/DAIY.png" />
 
   <!-- Open Graph / Social Media Preview -->
@@ -58,6 +58,11 @@
           <svg class="theme-icon-moon hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <!-- Sun Icon (shown in dark mode) -->
           <svg class="theme-icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+        <button class="btn-profile" id="btn-profile" title="User Profile">
+          <div class="avatar-circle" id="header-avatar-circle">
+            <span id="header-avatar-initials">G</span>
+          </div>
         </button>
       </div>
     </header>
@@ -172,6 +177,41 @@
       <p>Built with <span class="accent">Gemini AI</span> · GDG Agentic Premier League 🏏</p>
     </footer>
   </div>
+
+  <!-- ===== User Profile Modal ===== -->
+  <dialog id="profile-dialog" class="settings-dialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h3>👤 User Profile</h3>
+        <button class="btn-close" id="btn-close-profile">&times;</button>
+      </div>
+      <div class="dialog-body">
+        <div class="form-group">
+          <label for="input-profile-name">Name</label>
+          <input type="text" id="input-profile-name" placeholder="Enter your name..." />
+        </div>
+        <div class="form-group">
+          <label for="input-profile-email">Email</label>
+          <input type="email" id="input-profile-email" placeholder="Enter your email..." />
+        </div>
+        <div class="form-group">
+          <label>Avatar Color</label>
+          <div class="profile-color-picker" id="profile-color-picker">
+            <span class="color-swatch active" style="background-color: #6366f1;" data-color="#6366f1"></span>
+            <span class="color-swatch" style="background-color: #10b981;" data-color="#10b981"></span>
+            <span class="color-swatch" style="background-color: #f59e0b;" data-color="#f59e0b"></span>
+            <span class="color-swatch" style="background-color: #ef4444;" data-color="#ef4444"></span>
+            <span class="color-swatch" style="background-color: #ec4899;" data-color="#ec4899"></span>
+            <span class="color-swatch" style="background-color: #3b82f6;" data-color="#3b82f6"></span>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn btn-secondary" id="btn-cancel-profile">Cancel</button>
+        <button class="btn btn-primary" id="btn-save-profile">Save Changes</button>
+      </div>
+    </div>
+  </dialog>
 
   <script type="module" src="/src/main.js"></script>
 </body>

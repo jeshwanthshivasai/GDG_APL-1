@@ -6,6 +6,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
+import { loadProfile } from './profile.js';
 
 // Firebase config (these are public keys by design — security is in Firestore rules)
 const firebaseConfig = {
@@ -48,9 +49,15 @@ export async function initAnalytics() {
       console.warn('IP fetch failed (non-critical):', err.message);
     }
 
+    const profile = loadProfile();
+
     const sessionData = {
       sessionId,
       ipAddress,
+      userProfile: {
+        name: profile.name,
+        email: profile.email
+      },
       timestamp: new Date().toISOString(),
       userAgent: (navigator.userAgent || '').substring(0, 500),
       language: navigator.language || 'unknown',
@@ -165,5 +172,24 @@ export async function trackEvent(name, data = {}) {
     });
   } catch (err) {
     console.warn('Analytics trackEvent failed:', err.message);
+  }
+}
+
+/**
+ * Update the session document with current profile details.
+ * @param {object} profile 
+ */
+export async function updateAnalyticsProfile(profile) {
+  if (!sessionDocRef) return;
+
+  try {
+    await updateDoc(sessionDocRef, {
+      userProfile: {
+        name: profile.name || 'Guest User',
+        email: profile.email || ''
+      }
+    });
+  } catch (err) {
+    console.warn('Analytics updateAnalyticsProfile failed:', err.message);
   }
 }

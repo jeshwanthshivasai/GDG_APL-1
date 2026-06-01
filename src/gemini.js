@@ -4,6 +4,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
+import { loadProfile } from './profile.js';
 
 const SYSTEM_PROMPT = `You are DAIY, an expert product support technician and diagnostic agent. You help customers troubleshoot and fix issues with their electronic devices, appliances, and tech products.
 
@@ -50,6 +51,20 @@ export function getGeminiModel() {
 
 
 /**
+ * Generate a personalized system instruction prompt by appending current user profile details.
+ */
+function getPersonalizedSystemPrompt() {
+  const profile = loadProfile();
+  const userName = profile.name && profile.name !== 'Guest User' ? profile.name : '';
+  
+  if (userName) {
+    return `${SYSTEM_PROMPT}\n\nUSER PROFILE INFORMATION:\n- The user's name is ${userName}. Greet them by name when starting your response and address them directly (e.g. "Hi ${userName}, ...") when appropriate.`;
+  }
+  
+  return SYSTEM_PROMPT;
+}
+
+/**
  * Analyze issue using both voice transcript + camera image (multimodal)
  * @param {string} transcript — The user's voice description
  * @param {string} imageBase64 — Base64-encoded JPEG image (no prefix)
@@ -76,7 +91,7 @@ Please analyze both what the customer said and what you see in the camera image 
     model: activeModelName,
     contents: contents,
     config: {
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: getPersonalizedSystemPrompt(),
       temperature: 0.7,
       maxOutputTokens: 1024,
     },
@@ -99,7 +114,7 @@ export async function analyzeVoiceOnly(transcript) {
 
 The customer did not provide a camera image. Based on their description, provide a diagnosis and troubleshooting steps. If seeing the device would help, ask them to show it to the camera.`,
     config: {
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: getPersonalizedSystemPrompt(),
       temperature: 0.7,
       maxOutputTokens: 1024,
     },
