@@ -1258,3 +1258,16 @@ body {
   width: auto;
 }
 
+.onboarding-welcome-image {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.onboarding-welcome-image img {
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  object-fit: contain;
+}
+
