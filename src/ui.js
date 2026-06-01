@@ -21,19 +21,15 @@ const DOM = {
   micLabel: () => $('mic-label'),
   historyList: () => $('history-list'),
   historyEmpty: () => $('history-empty'),
-  setupOverlay: () => $('setup-overlay'),
+  serviceError: () => $('service-error'),
 };
 
 /**
- * Show/hide the API key setup overlay
+ * Show a friendly service unavailable error (when env keys are missing)
  */
-export function showSetupOverlay(show) {
-  const overlay = DOM.setupOverlay();
-  if (show) {
-    overlay.classList.remove('hidden');
-  } else {
-    overlay.classList.add('hidden');
-  }
+export function showServiceError() {
+  const el = DOM.serviceError();
+  if (el) el.classList.remove('hidden');
 }
 
 /**
@@ -190,14 +186,14 @@ function parseResponseMarkdown(text) {
 /**
  * Add entry to conversation history
  */
-export function addHistoryItem(userText, aiText, usedCamera = false) {
+export function addHistoryItem(userText, aiText, usedCamera = false, saveToStorage = true, storedTime = null) {
   const list = DOM.historyList();
   const empty = DOM.historyEmpty();
 
   // Hide empty state
   if (empty) empty.classList.add('hidden');
 
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const time = storedTime || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const badgeClass = usedCamera ? 'with-camera' : 'voice-only';
   const badgeText = usedCamera ? '📷 Camera + Voice' : '🎤 Voice only';
 
@@ -223,12 +219,22 @@ export function addHistoryItem(userText, aiText, usedCamera = false) {
 
   // Prepend (newest first)
   list.prepend(item);
+
+  if (saveToStorage) {
+    try {
+      const history = JSON.parse(localStorage.getItem('daiy_history') || '[]');
+      history.push({ userText, aiText, usedCamera, time });
+      localStorage.setItem('daiy_history', JSON.stringify(history));
+    } catch (err) {
+      console.warn('Failed to save history to localStorage:', err);
+    }
+  }
 }
 
 /**
  * Clear conversation history
  */
-export function clearHistory() {
+export function clearHistory(clearStorage = true) {
   const list = DOM.historyList();
   const empty = DOM.historyEmpty();
 
@@ -242,6 +248,25 @@ export function clearHistory() {
     newEmpty.id = 'history-empty';
     newEmpty.innerHTML = '<p>Your conversation history will appear here</p>';
     list.appendChild(newEmpty);
+  }
+
+  if (clearStorage) {
+    localStorage.removeItem('daiy_history');
+  }
+}
+
+/**
+ * Load history from localStorage and populate the UI
+ */
+export function loadHistoryFromStorage() {
+  try {
+    const history = JSON.parse(localStorage.getItem('daiy_history') || '[]');
+    clearHistory(false); // clear DOM, not storage
+    history.forEach(item => {
+      addHistoryItem(item.userText, item.aiText, item.usedCamera, false, item.time);
+    });
+  } catch (err) {
+    console.warn('Failed to load history from localStorage:', err);
   }
 }
 

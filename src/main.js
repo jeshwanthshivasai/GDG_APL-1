@@ -1,18 +1,21 @@
 /**
  * main.js — Application entry point & orchestration
- * Wires together camera, voice, Gemini AI, and UI modules.
+ * Wires together camera, voice, Gemini AI, analytics, onboarding, and UI modules.
  */
 
 import { CameraManager } from './camera.js';
 import { VoiceManager } from './voice.js';
 import { initGemini, analyzeWithVoiceAndCamera, analyzeVoiceOnly, isReady, setGeminiModel, getGeminiModel } from './gemini.js';
 import { speakWithSarvam, stopSarvamAudio } from './sarvam.js';
+import { initAnalytics, trackQuery } from './analytics.js';
+import { startOnboarding } from './onboarding.js';
 import * as UI from './ui.js';
 
 // ─── Variables & Configuration ────────────────────────────────
-let activeGeminiKey = localStorage.getItem('daiy_gemini_key') || localStorage.getItem('fixit_gemini_key') || import.meta.env.VITE_GEMINI_API_KEY;
-let activeSarvamKey = localStorage.getItem('daiy_sarvam_key') || localStorage.getItem('fixit_sarvam_key') || import.meta.env.VITE_SARVAM_API_KEY;
-let activeGeminiModel = localStorage.getItem('daiy_gemini_model') || localStorage.getItem('fixit_gemini_model') || import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash';
+// API keys are baked in at build time via Vercel env vars — no user input needed
+const activeGeminiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const activeSarvamKey = import.meta.env.VITE_SARVAM_API_KEY;
+const activeGeminiModel = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash';
 
 const camera = new CameraManager();
 const voice = new VoiceManager();
@@ -39,30 +42,35 @@ function applyTheme(theme) {
  * Bootstrap the app
  */
 function init() {
-  // Load theme preference
-  const savedTheme = localStorage.getItem('daiy_theme') || localStorage.getItem('fixit_theme') || 'dark';
+  // 1. Load theme preference
+  const savedTheme = localStorage.getItem('daiy_theme') || 'dark';
   applyTheme(savedTheme);
 
-  // Load configuration
+  // 2. Load configuration
   setGeminiModel(activeGeminiModel);
 
-  // Initialize Gemini
+  // 3. Initialize Gemini
   if (!initGemini(activeGeminiKey)) {
-    UI.showSetupOverlay(true);
-    // Even if setup overlay is shown, wire up buttons so settings can be opened
+    UI.showServiceError();
     setupButtons();
     return;
   }
-  UI.showSetupOverlay(false);
 
-  // 2. Wire up voice callbacks
+  // 4. Wire up voice callbacks
   setupVoiceCallbacks();
 
-  // 3. Wire up button handlers
+  // 5. Wire up button handlers
   setupButtons();
 
-  // 4. Set initial state
+  // 6. Set initial state
   UI.setStatus('ready', 'Ready');
+  UI.loadHistoryFromStorage();
+
+  // 7. Initialize analytics (non-blocking)
+  initAnalytics();
+
+  // 8. Show onboarding tour for first-time users
+  startOnboarding();
 
   console.log('🔧 DAIY initialized with model:', activeGeminiModel);
 }
@@ -135,6 +143,9 @@ async function processQuery(transcript) {
     UI.showResponse(responseText, usedCamera);
     UI.addHistoryItem(transcript, responseText, usedCamera);
     UI.setStatus('ready', 'Ready');
+
+    // Track the query for analytics
+    trackQuery(transcript, usedCamera);
 
     // Speak the response (optional — use Web Speech Synthesis)
     speakResponse(responseText);
@@ -242,106 +253,6 @@ function setupButtons() {
     });
   }
 
-  // Settings elements
-  const dialogSettings = document.getElementById('settings-dialog');
-  const btnSettings = document.getElementById('btn-settings');
-  const btnCloseSettings = document.getElementById('btn-close-settings');
-  const btnCancelSettings = document.getElementById('btn-cancel-settings');
-  const btnSaveSettings = document.getElementById('btn-save-settings');
-
-  const inputGeminiKey = document.getElementById('input-gemini-key');
-  const selectGeminiModel = document.getElementById('select-gemini-model');
-  const inputSarvamKey = document.getElementById('input-sarvam-key');
-
-  // Open settings
-  btnSettings.addEventListener('click', () => {
-    inputGeminiKey.value = localStorage.getItem('daiy_gemini_key') || localStorage.getItem('fixit_gemini_key') || '';
-    selectGeminiModel.value = getGeminiModel();
-    inputSarvamKey.value = localStorage.getItem('daiy_sarvam_key') || localStorage.getItem('fixit_sarvam_key') || '';
-    dialogSettings.showModal();
-  });
-
-  // Close / Cancel settings
-  const closeSettings = () => dialogSettings.close();
-  btnCloseSettings.addEventListener('click', closeSettings);
-  btnCancelSettings.addEventListener('click', closeSettings);
-
-  // Save settings
-  btnSaveSettings.addEventListener('click', () => {
-    const newGeminiKey = inputGeminiKey.value.trim();
-    const newModel = selectGeminiModel.value;
-    const newSarvamKey = inputSarvamKey.value.trim();
-
-    // Store keys in LocalStorage
-    if (newGeminiKey) {
-      localStorage.setItem('daiy_gemini_key', newGeminiKey);
-      activeGeminiKey = newGeminiKey;
-    } else {
-      localStorage.removeItem('daiy_gemini_key');
-      localStorage.removeItem('fixit_gemini_key');
-      activeGeminiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    }
-
-    localStorage.setItem('daiy_gemini_model', newModel);
-    activeGeminiModel = newModel;
-    setGeminiModel(newModel);
-
-    if (newSarvamKey) {
-      localStorage.setItem('daiy_sarvam_key', newSarvamKey);
-      activeSarvamKey = newSarvamKey;
-    } else {
-      localStorage.removeItem('daiy_sarvam_key');
-      localStorage.removeItem('fixit_sarvam_key');
-      activeSarvamKey = import.meta.env.VITE_SARVAM_API_KEY;
-    }
-
-    // Re-initialize Gemini
-    if (initGemini(activeGeminiKey)) {
-      UI.showSetupOverlay(false);
-      // Re-setup callbacks
-      setupVoiceCallbacks();
-      UI.setStatus('ready', `Ready (${newModel})`);
-    } else {
-      UI.showSetupOverlay(true);
-    }
-
-    closeSettings();
-  });
-
-  // Setup overlay save button
-  const btnSaveSetup = document.getElementById('btn-save-setup');
-  if (btnSaveSetup) {
-    btnSaveSetup.addEventListener('click', () => {
-      const inputSetupGemini = document.getElementById('setup-gemini-key');
-      const inputSetupSarvam = document.getElementById('setup-sarvam-key');
-      
-      const geminiVal = inputSetupGemini.value.trim();
-      const sarvamVal = inputSetupSarvam.value.trim();
-      
-      if (!geminiVal) {
-        UI.showError('Gemini API key is required!');
-        return;
-      }
-      
-      localStorage.setItem('daiy_gemini_key', geminiVal);
-      activeGeminiKey = geminiVal;
-      
-      if (sarvamVal) {
-        localStorage.setItem('daiy_sarvam_key', sarvamVal);
-        activeSarvamKey = sarvamVal;
-      }
-      
-      // Attempt restart
-      if (initGemini(activeGeminiKey)) {
-        UI.showSetupOverlay(false);
-        setupVoiceCallbacks();
-        UI.setStatus('ready', `Ready (${activeGeminiModel})`);
-      } else {
-        UI.showError('Invalid Gemini API Key');
-      }
-    });
-  }
-
   // Mute/Stop speech button
   const btnStopAudio = document.getElementById('btn-stop-audio');
   if (btnStopAudio) {
@@ -366,7 +277,7 @@ function setupButtons() {
       UI.hideResponse();
       
       // 3. Reset state
-      UI.setStatus('ready', `Ready (${activeGeminiModel})`);
+      UI.setStatus('ready', 'Ready');
     });
   }
 
