@@ -43,6 +43,8 @@ export function setStatus(state, text) {
   const pill = DOM.statusPill();
   const statusText = DOM.statusText();
 
+  if (!pill) return; // Gracefully do nothing if status-pill is removed
+
   // Remove all state classes
   pill.classList.remove('listening', 'thinking', 'error');
 
@@ -50,7 +52,9 @@ export function setStatus(state, text) {
     pill.classList.add(state);
   }
 
-  statusText.textContent = text || state.charAt(0).toUpperCase() + state.slice(1);
+  if (statusText) {
+    statusText.textContent = text || state.charAt(0).toUpperCase() + state.slice(1);
+  }
 }
 
 /**

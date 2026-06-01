@@ -18,9 +18,31 @@ const camera = new CameraManager();
 const voice = new VoiceManager();
 
 /**
+ * Apply the selected theme (light vs dark)
+ */
+function applyTheme(theme) {
+  const moonIcon = document.querySelector('.theme-icon-moon');
+  const sunIcon = document.querySelector('.theme-icon-sun');
+  
+  if (theme === 'light') {
+    document.body.classList.add('light-theme');
+    if (moonIcon) moonIcon.classList.remove('hidden');
+    if (sunIcon) sunIcon.classList.add('hidden');
+  } else {
+    document.body.classList.remove('light-theme');
+    if (moonIcon) moonIcon.classList.add('hidden');
+    if (sunIcon) sunIcon.classList.remove('hidden');
+  }
+}
+
+/**
  * Bootstrap the app
  */
 function init() {
+  // Load theme preference
+  const savedTheme = localStorage.getItem('fixit_theme') || 'dark';
+  applyTheme(savedTheme);
+
   // Load configuration
   setGeminiModel(activeGeminiModel);
 
@@ -208,6 +230,17 @@ function setupButtons() {
   btnClearHistory.addEventListener('click', () => {
     UI.clearHistory();
   });
+
+  // Theme toggle button
+  const btnThemeToggle = document.getElementById('btn-theme-toggle');
+  if (btnThemeToggle) {
+    btnThemeToggle.addEventListener('click', () => {
+      const currentTheme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('fixit_theme', newTheme);
+      applyTheme(newTheme);
+    });
+  }
 
   // Settings elements
   const dialogSettings = document.getElementById('settings-dialog');
