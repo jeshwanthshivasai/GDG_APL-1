@@ -174,15 +174,43 @@ function showStep(index) {
       }
 
       const rect = targetEl.getBoundingClientRect();
-      const padding = 12;
+      const padding = isMobile ? 4 : 12;
       const isOffscreen = rect.top > window.innerHeight || rect.bottom < 0;
 
       if (!isOffscreen) {
         spotlight.style.display = 'block';
-        spotlight.style.top = `${rect.top - padding}px`;
-        spotlight.style.left = `${rect.left - padding}px`;
-        spotlight.style.width = `${rect.width + padding * 2}px`;
-        spotlight.style.height = `${rect.height + padding * 2}px`;
+        
+        let spotlightTop = rect.top - padding;
+        let spotlightLeft = rect.left - padding;
+        let spotlightWidth = rect.width + padding * 2;
+        let spotlightHeight = rect.height + padding * 2;
+
+        if (isMobile) {
+          // Clamp spotlight horizontally to screen bounds with a 4px margin
+          if (spotlightLeft < 4) {
+            const diff = 4 - spotlightLeft;
+            spotlightLeft = 4;
+            spotlightWidth -= diff;
+          }
+          if (spotlightLeft + spotlightWidth > window.innerWidth - 4) {
+            spotlightWidth = window.innerWidth - 4 - spotlightLeft;
+          }
+
+          // Clamp spotlight vertically to screen bounds with a 4px margin
+          if (spotlightTop < 4) {
+            const diff = 4 - spotlightTop;
+            spotlightTop = 4;
+            spotlightHeight -= diff;
+          }
+          if (spotlightTop + spotlightHeight > window.innerHeight - 4) {
+            spotlightHeight = window.innerHeight - 4 - spotlightTop;
+          }
+        }
+
+        spotlight.style.top = `${spotlightTop}px`;
+        spotlight.style.left = `${spotlightLeft}px`;
+        spotlight.style.width = `${spotlightWidth}px`;
+        spotlight.style.height = `${spotlightHeight}px`;
         spotlight.style.borderRadius = '16px';
       } else {
         spotlight.style.display = 'none';
@@ -197,8 +225,9 @@ function showStep(index) {
     tooltip.style.left = '50%';
 
     if (window.matchMedia('(max-width: 680px)').matches) {
-      tooltip.style.top = '1rem';
-      tooltip.style.transform = 'translateX(-50%)';
+      tooltip.style.top = '50%';
+      tooltip.style.bottom = 'auto';
+      tooltip.style.transform = 'translate(-50%, -50%)';
       tooltip.style.maxWidth = 'calc(100% - 2rem)';
       tooltip.style.maxHeight = 'calc(100dvh - 2rem)';
       tooltip.style.overflowY = 'auto';
@@ -221,17 +250,21 @@ function positionTooltip(tooltip, targetRect, position) {
   tooltip.style.maxHeight = '';
   tooltip.style.overflowY = '';
 
-  // On mobile always pin to top-center or bottom-center — avoids off-screen issues
+  // On mobile always position relative to the highlight ring
   const isMobile = window.matchMedia('(max-width: 680px)').matches;
   if (isMobile) {
-    const targetCenterY = targetRect ? (targetRect.top + targetRect.bottom) / 2 : window.innerHeight / 2;
-    if (targetCenterY > window.innerHeight / 2) {
-      // Target is in bottom half, pin tooltip to top
-      tooltip.style.top = '1rem';
+    const padding = 4;
+    const gap = 12; // Gap between highlight ring and tooltip
+    const spotlightTop = targetRect.top - padding;
+    const spotlightBottom = targetRect.bottom + padding;
+
+    if (position === 'right' || position === 'bottom') {
+      // Place below the highlight ring
+      tooltip.style.top = `${spotlightBottom + gap}px`;
       tooltip.style.bottom = 'auto';
     } else {
-      // Target is in top half, pin tooltip to bottom
-      tooltip.style.bottom = '1rem';
+      // Place above the highlight ring (for 'top' and 'left')
+      tooltip.style.bottom = `${window.innerHeight - spotlightTop + gap}px`;
       tooltip.style.top = 'auto';
     }
     tooltip.style.left = '1rem';
