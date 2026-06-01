@@ -36,8 +36,21 @@ export async function initAnalytics() {
 
     const isDarkMode = !document.body.classList.contains('light-theme');
 
+    // Fetch IP address (from CORS-enabled api.ipify.org API)
+    let ipAddress = 'unknown';
+    try {
+      const ipRes = await fetch('https://api.ipify.org?format=json');
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        ipAddress = ipData.ip || 'unknown';
+      }
+    } catch (err) {
+      console.warn('IP fetch failed (non-critical):', err.message);
+    }
+
     const sessionData = {
       sessionId,
+      ipAddress,
       timestamp: new Date().toISOString(),
       userAgent: (navigator.userAgent || '').substring(0, 500),
       language: navigator.language || 'unknown',
@@ -124,7 +137,7 @@ export async function trackQuery(transcript, usedCamera) {
       queriesCount: increment(1),
       cameraUsed: usedCamera || false,
       queries: arrayUnion({
-        text: (transcript || '').substring(0, 50),
+        text: transcript || '', // Log full user query text to capture their exact purpose
         camera: !!usedCamera,
         time: new Date().toISOString()
       })
