@@ -168,27 +168,47 @@ function showStep(index) {
   if (step.target) {
     const targetEl = document.querySelector(step.target);
     if (targetEl) {
+      const isMobile = window.matchMedia('(max-width: 680px)').matches;
+      if (isMobile) {
+        targetEl.scrollIntoView({ block: 'center' });
+      }
+
       const rect = targetEl.getBoundingClientRect();
       const padding = 12;
+      const isOffscreen = rect.top > window.innerHeight || rect.bottom < 0;
 
-      spotlight.style.display = 'block';
-      spotlight.style.top = `${rect.top - padding}px`;
-      spotlight.style.left = `${rect.left - padding}px`;
-      spotlight.style.width = `${rect.width + padding * 2}px`;
-      spotlight.style.height = `${rect.height + padding * 2}px`;
-      spotlight.style.borderRadius = '16px';
+      if (!isOffscreen) {
+        spotlight.style.display = 'block';
+        spotlight.style.top = `${rect.top - padding}px`;
+        spotlight.style.left = `${rect.left - padding}px`;
+        spotlight.style.width = `${rect.width + padding * 2}px`;
+        spotlight.style.height = `${rect.height + padding * 2}px`;
+        spotlight.style.borderRadius = '16px';
+      } else {
+        spotlight.style.display = 'none';
+      }
 
-      // Position tooltip based on step.position
       positionTooltip(tooltip, rect, step.position);
     }
   } else {
     // Center mode (welcome splash)
     spotlight.style.display = 'none';
     tooltip.style.position = 'fixed';
-    tooltip.style.top = '50%';
     tooltip.style.left = '50%';
-    tooltip.style.transform = 'translate(-50%, -50%)';
-    tooltip.style.maxWidth = '420px';
+
+    if (window.matchMedia('(max-width: 680px)').matches) {
+      tooltip.style.top = '1rem';
+      tooltip.style.transform = 'translateX(-50%)';
+      tooltip.style.maxWidth = 'calc(100% - 2rem)';
+      tooltip.style.maxHeight = 'calc(100dvh - 2rem)';
+      tooltip.style.overflowY = 'auto';
+    } else {
+      tooltip.style.top = '50%';
+      tooltip.style.transform = 'translate(-50%, -50%)';
+      tooltip.style.maxWidth = '420px';
+      tooltip.style.maxHeight = '';
+      tooltip.style.overflowY = '';
+    }
   }
 
   // Animate in
@@ -198,17 +218,42 @@ function showStep(index) {
 function positionTooltip(tooltip, targetRect, position) {
   tooltip.style.position = 'fixed';
   tooltip.style.transform = 'none';
+  tooltip.style.maxHeight = '';
+  tooltip.style.overflowY = '';
+
+  // On mobile always pin to top-center or bottom-center — avoids off-screen issues
+  const isMobile = window.matchMedia('(max-width: 680px)').matches;
+  if (isMobile) {
+    const targetCenterY = targetRect ? (targetRect.top + targetRect.bottom) / 2 : window.innerHeight / 2;
+    if (targetCenterY > window.innerHeight / 2) {
+      // Target is in bottom half, pin tooltip to top
+      tooltip.style.top = '1rem';
+      tooltip.style.bottom = 'auto';
+    } else {
+      // Target is in top half, pin tooltip to bottom
+      tooltip.style.bottom = '1rem';
+      tooltip.style.top = 'auto';
+    }
+    tooltip.style.left = '1rem';
+    tooltip.style.right = '1rem';
+    tooltip.style.maxWidth = 'calc(100% - 2rem)';
+    tooltip.style.maxHeight = 'calc(100vh - 2rem)';
+    tooltip.style.overflowY = 'auto';
+    return;
+  }
+
+  tooltip.style.bottom = '';
+  tooltip.style.right = '';
   tooltip.style.maxWidth = '340px';
 
   const gap = 20;
   const tooltipWidth = 340;
-  const tooltipHeight = 200;
+  const tooltipHeight = 220;
 
   switch (position) {
     case 'right':
       tooltip.style.top = `${targetRect.top + targetRect.height / 2 - tooltipHeight / 2}px`;
       tooltip.style.left = `${targetRect.right + gap}px`;
-      // If overflows right, place it inside
       if (targetRect.right + gap + tooltipWidth > window.innerWidth) {
         tooltip.style.left = `${targetRect.left + 20}px`;
         tooltip.style.top = `${targetRect.bottom + gap}px`;
@@ -217,7 +262,6 @@ function positionTooltip(tooltip, targetRect, position) {
     case 'left':
       tooltip.style.top = `${targetRect.top + targetRect.height / 2 - tooltipHeight / 2}px`;
       tooltip.style.left = `${targetRect.left - tooltipWidth - gap}px`;
-      // If overflows left, place below
       if (targetRect.left - tooltipWidth - gap < 0) {
         tooltip.style.left = `${targetRect.left}px`;
         tooltip.style.top = `${targetRect.bottom + gap}px`;
@@ -226,7 +270,6 @@ function positionTooltip(tooltip, targetRect, position) {
     case 'top':
       tooltip.style.top = `${targetRect.top - tooltipHeight - gap}px`;
       tooltip.style.left = `${targetRect.left + targetRect.width / 2 - tooltipWidth / 2}px`;
-      // If overflows top, place below
       if (targetRect.top - tooltipHeight - gap < 0) {
         tooltip.style.top = `${targetRect.bottom + gap}px`;
       }
@@ -238,11 +281,18 @@ function positionTooltip(tooltip, targetRect, position) {
       break;
   }
 
-  // Clamp within viewport
+  // Clamp horizontally
   const computedLeft = parseInt(tooltip.style.left);
   if (computedLeft < 16) tooltip.style.left = '16px';
   if (computedLeft + tooltipWidth > window.innerWidth - 16) {
     tooltip.style.left = `${window.innerWidth - tooltipWidth - 16}px`;
+  }
+
+  // Clamp vertically
+  const computedTop = parseInt(tooltip.style.top);
+  if (computedTop < 16) tooltip.style.top = '16px';
+  if (computedTop + tooltipHeight > window.innerHeight - 16) {
+    tooltip.style.top = `${window.innerHeight - tooltipHeight - 16}px`;
   }
 }
 

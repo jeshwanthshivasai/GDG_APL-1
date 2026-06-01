@@ -1320,6 +1320,7 @@ body {
   padding: 0.5rem 1.25rem;
   border-radius: var(--radius-full);
   font-family: var(--font-family);
+  white-space: nowrap;
   transition: transform 0.15s, box-shadow 0.2s;
   box-shadow: 0 2px 12px rgba(0, 255, 187, 0.2);
 }
