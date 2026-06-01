@@ -81,12 +81,8 @@ function createOverlay() {
         <!-- Onboarding Profile Form -->
         <div class="onboarding-form hidden" id="onboarding-form">
           <div class="form-group">
-            <label for="onboarding-name">Your Name</label>
+            <label for="onboarding-name">What should we call you?</label>
             <input type="text" id="onboarding-name" placeholder="E.g., John Doe" autocomplete="off" />
-          </div>
-          <div class="form-group">
-            <label for="onboarding-email">Email Address</label>
-            <input type="email" id="onboarding-email" placeholder="E.g., john@example.com" autocomplete="off" />
           </div>
         </div>
       </div>
@@ -109,15 +105,10 @@ function createOverlay() {
   document.getElementById('onboarding-next').addEventListener('click', () => {
     if (currentStep === 0) {
       const nameInput = document.getElementById('onboarding-name');
-      const emailInput = document.getElementById('onboarding-email');
       const nameVal = nameInput ? nameInput.value.trim() : '';
-      const emailVal = emailInput ? emailInput.value.trim() : '';
-      
-      saveProfile({
-        name: nameVal || 'Guest User',
-        email: emailVal,
-        avatarColor: '#6366f1' // default
-      });
+      if (nameVal) {
+        saveProfile({ name: nameVal, avatarColor: '#6366f1' });
+      }
     }
     nextStep();
   });

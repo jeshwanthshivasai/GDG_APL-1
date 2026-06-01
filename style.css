@@ -937,46 +937,130 @@ body {
 @media (max-width: 1024px) {
   body {
     height: auto;
-    overflow: auto;
+    overflow-y: auto;
   }
-  
+
   .app {
     height: auto;
-    overflow: auto;
+    min-height: 100vh;
+    overflow: visible;
+    padding: 0 0.75rem;
   }
 
   .main-content {
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto auto;
+    flex: none;
   }
 
   .history-panel {
     grid-column: 1 / -1;
-    max-height: 200px;
+    max-height: 300px;
+  }
+
+  .panel {
+    min-height: 0;
   }
 }
 
 @media (max-width: 680px) {
+  .app {
+    padding: 0 0.5rem;
+  }
+
   .main-content {
     grid-template-columns: 1fr;
-    grid-template-rows: 250px 1fr auto;
+    grid-template-rows: auto auto auto;
+    gap: 0.65rem;
   }
 
   .camera-panel {
-    max-height: 280px;
+    max-height: 260px;
+  }
+
+  .camera-viewfinder {
+    max-height: 200px;
   }
 
   .history-panel {
-    max-height: 180px;
+    max-height: 220px;
+    grid-column: auto;
+  }
+
+  /* Compact placeholder on mobile */
+  .transcript-placeholder {
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+  }
+
+  .transcript-placeholder [style*="font-size: 3.5rem"] {
+    font-size: 2rem !important;
+  }
+
+  .transcript-placeholder h3 {
+    font-size: 0.95rem;
+  }
+
+  .transcript-placeholder p {
+    font-size: 0.8rem;
+  }
+
+  /* Compact mic button */
+  .voice-controls {
+    padding: 0.75rem 1rem;
+    gap: 0.5rem;
+  }
+
+  .mic-button {
+    width: 64px;
+    height: 64px;
+  }
+
+  /* Compact panel headers */
+  .panel-header {
+    padding: 0.65rem 0.85rem;
+  }
+
+  .panel-header h2 {
+    font-size: 0.85rem;
   }
 
   .app-header {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    padding: 0.75rem 0.25rem;
   }
 
   .badge {
     display: none;
+  }
+
+  /* Auth card tighter on small screens */
+  .auth-card {
+    padding: 1.75rem 1.25rem;
+  }
+
+  .auth-logo {
+    width: 140px;
+  }
+
+  /* Dropdown stays on screen */
+  .user-dropdown {
+    right: 0;
+    min-width: 190px;
+  }
+}
+
+@media (max-width: 400px) {
+  .auth-card {
+    padding: 1.5rem 1rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .auth-logo {
+    width: 120px;
+  }
+
+  .auth-tabs {
+    margin-bottom: 1rem;
   }
 }
 
@@ -1388,3 +1472,400 @@ body {
   box-shadow: 0 0 0 2px var(--accent-glow);
 }
 
+
+/* ============================================
+   Auth Screen
+   ============================================ */
+
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 85%, rgba(168, 85, 247, 0.07) 0%, transparent 55%);
+  padding: 1rem;
+}
+
+.auth-screen.hidden {
+  display: none !important;
+}
+
+.auth-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.auth-welcome-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.auth-logo {
+  width: 180px;
+  height: auto;
+  margin-bottom: 1.75rem;
+}
+
+.auth-logo img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Tabs */
+.auth-tabs {
+  display: flex;
+  width: 100%;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  margin-bottom: 1.25rem;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--radius-md) - 2px);
+  color: var(--text-muted);
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.auth-tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Error */
+.auth-error {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  color: #fca5a5;
+  font-size: 0.82rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Forms */
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.auth-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-form input::placeholder {
+  color: var(--text-muted);
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.light-theme .auth-form input {
+  background: rgba(0,0,0,0.04);
+}
+
+.auth-submit {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  text-align: center;
+  justify-content: center;
+}
+
+/* Divider */
+.auth-divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-glass);
+}
+
+/* Google button */
+.btn-google {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.btn-google:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-1px);
+}
+
+.btn-google:active {
+  transform: translateY(0);
+}
+
+.light-theme .btn-google {
+  background: #fff;
+  border-color: #e2e8f0;
+}
+
+.light-theme .btn-google:hover {
+  background: #f8fafc;
+}
+
+/* ============================================
+   User Menu & Dropdown
+   ============================================ */
+
+.user-menu {
+  position: relative;
+}
+
+.avatar-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 0.5rem;
+  z-index: 1000;
+  animation: dropdown-in 0.15s ease;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.user-dropdown-info {
+  padding: 0.6rem 0.75rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.user-dropdown-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-dropdown-email {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-glass);
+  margin: 0.25rem 0;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-family);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+}
+
+.dropdown-item-danger {
+  color: #f87171;
+}
+
+.dropdown-item-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+/* Profile dialog email display */
+.profile-email-row p.profile-email-display {
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ============================================
+   Email Verification Screen
+   ============================================ */
+
+.verify-icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+
+.verify-email-address {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  word-break: break-all;
+  text-align: center;
+}
+
+.verify-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.verify-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.verify-actions .btn {
+  width: 100%;
+  text-align: center;
+  justify-content: center;
+}
+
+.verify-refresh-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ============================================
+   Shared: link button & forgot password
+   ============================================ */
+
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-family: var(--font-family);
+  font-size: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link-btn:hover {
+  color: var(--accent-hover);
+}
+
+.forgot-row {
+  width: 100%;
+  text-align: right;
+  margin-top: -0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.forgot-row .link-btn {
+  font-size: 0.8rem;
+  text-decoration: none;
+  color: var(--text-muted);
+}
+
+.forgot-row .link-btn:hover {
+  color: var(--accent);
+}

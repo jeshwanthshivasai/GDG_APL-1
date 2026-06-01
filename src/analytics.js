@@ -4,20 +4,9 @@
  * No PII is collected. Data is write-only from the client.
  */
 
-import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, doc, setDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
+import { app } from './firebase.js';
 import { loadProfile } from './profile.js';
-
-// Firebase config (these are public keys by design — security is in Firestore rules)
-const firebaseConfig = {
-  apiKey: "AIzaSyAwasu9z3U0iKOuzCtjAVTKmhrovCKGL0c",
-  authDomain: "gdg-apl-1.firebaseapp.com",
-  projectId: "gdg-apl-1",
-  storageBucket: "gdg-apl-1.firebasestorage.app",
-  messagingSenderId: "1008297805125",
-  appId: "1:1008297805125:web:b85582d35e3d9560a66a2c",
-  measurementId: "G-NJTWG8CE2C"
-};
 
 let db = null;
 let sessionId = null;
@@ -29,7 +18,6 @@ let sessionDocRef = null;
  */
 export async function initAnalytics() {
   try {
-    const app = initializeApp(firebaseConfig);
     db = getFirestore(app, 'daiy-analytics');
 
     sessionId = crypto.randomUUID();
