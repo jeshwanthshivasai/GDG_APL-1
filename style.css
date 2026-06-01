@@ -904,6 +904,11 @@ body {
   color: var(--text-muted);
 }
 
+.accent {
+  color: var(--accent);
+  font-weight: 500;
+}
+
 /* --- Scrollbar --- */
 ::-webkit-scrollbar {
   width: 5px;
