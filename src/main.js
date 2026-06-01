@@ -104,6 +104,8 @@ function friendlyAuthError(err) {
       return 'Invalid email or password.';
     case 'auth/email-already-in-use':
       return 'An account with this email already exists.';
+    case 'auth/account-exists-with-different-credential':
+      return 'This email is already registered with a password. Use "Sign In" with your password instead.';
     case 'auth/weak-password':
       return 'Password must be at least 6 characters.';
     case 'auth/invalid-email':
@@ -200,6 +202,17 @@ function setupAuthUI() {
     try {
       await signInWithGoogle();
     } catch (err) {
+      if (err.code === 'auth/account-exists-with-different-credential') {
+        // Switch to Sign In tab and pre-fill their email
+        tabLogin.classList.add('active');
+        tabSignup.classList.remove('active');
+        formLogin.classList.remove('hidden');
+        formSignup.classList.add('hidden');
+        const conflictEmail = err.customData?.email || '';
+        if (conflictEmail) {
+          document.getElementById('auth-email').value = conflictEmail;
+        }
+      }
       setAuthError(friendlyAuthError(err));
     }
   });
