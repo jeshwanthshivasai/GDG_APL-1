@@ -8,17 +8,8 @@ const ONBOARDED_KEY = 'daiy_onboarded';
 const STEPS = [
   {
     target: null, // Welcome splash — no target element
-    titleHtml: `Welcome to <div class="onboarding-welcome-logo"><svg class="logo-svg" width="98" height="36" viewBox="0 0 186 69" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 0.000106812H41.1429V6.85725H48V61.7144H41.1429V68.5715H0V0.000106812ZM27.4286 48.0001H34.2857V20.5715H27.4286V13.7144H13.7143V54.8572H27.4286V48.0001ZM150.946 48.0001H144.089V41.143H137.232V34.2858H130.375V0.000106812H144.089V27.4287H150.946V34.2858H164.661V27.4287H171.518V0.000106812H185.232V34.2858H178.375V41.143H171.518V48.0001H164.661V68.5715H150.946V48.0001Z" fill="currentColor"/>
-      <path d="M54.875 20.5715H61.7321V13.7144H68.5893V6.85725H75.4464V0.000106812H82.3036V6.85725H89.1607V13.7144H96.0179V20.5715H102.875V68.5715H89.1607V54.8572H68.5893V68.5715H54.875V20.5715ZM68.5893 41.143H89.1607V27.4287H82.3036V20.5715H75.4464V27.4287H68.5893V41.143ZM109.75 0.000106812H123.464V68.5715H109.75V0.000106812Z" fill="url(#paint0_linear_452_5_onboarding)"/>
-      <defs>
-        <linearGradient id="paint0_linear_452_5_onboarding" x1="96.0625" y1="-0.428467" x2="96.0625" y2="68.5715" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#00FFBB"/>
-          <stop offset="1" stop-color="#7300FF"/>
-        </linearGradient>
-      </defs>
-    </svg></div> 👋`,
     title: 'Welcome to DAIY 👋',
+    showWelcomeLogo: true,
     description: 'Your AI-powered repair assistant. Describe a problem, show it on camera, and get instant diagnosis. Let\'s show you how it works!',
     position: 'center'
   },
@@ -79,6 +70,9 @@ function createOverlay() {
     <div class="onboarding-spotlight" id="onboarding-spotlight"></div>
     <div class="onboarding-tooltip" id="onboarding-tooltip">
       <div class="onboarding-tooltip-content">
+        <div class="onboarding-welcome-image hidden" id="onboarding-welcome-image">
+          <img src="/DAIY.png" alt="DAIY Logo" />
+        </div>
         <h3 class="onboarding-title" id="onboarding-title"></h3>
         <p class="onboarding-desc" id="onboarding-desc"></p>
       </div>
@@ -112,6 +106,7 @@ function showStep(index) {
   const spotlight = document.getElementById('onboarding-spotlight');
   const tooltip = document.getElementById('onboarding-tooltip');
   const dotsContainer = document.getElementById('onboarding-dots');
+  const welcomeImage = document.getElementById('onboarding-welcome-image');
 
   // Update text
   if (step.titleHtml) {
@@ -121,8 +116,19 @@ function showStep(index) {
   }
   desc.textContent = step.description;
 
+  // Toggle welcome logo image
+  if (welcomeImage) {
+    if (step.showWelcomeLogo) {
+      welcomeImage.classList.remove('hidden');
+    } else {
+      welcomeImage.classList.add('hidden');
+    }
+  }
+
   // Update button text
-  if (index === STEPS.length - 1) {
+  if (index === 0) {
+    nextBtn.textContent = 'Take a Tour 🚀';
+  } else if (index === STEPS.length - 1) {
     nextBtn.textContent = 'Got it! ✨';
   } else {
     nextBtn.textContent = 'Next →';
