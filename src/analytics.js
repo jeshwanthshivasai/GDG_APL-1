@@ -18,7 +18,7 @@ let sessionDocRef = null;
  */
 export async function initAnalytics() {
   try {
-    db = getFirestore(app, 'daiy-analytics');
+    db = getFirestore(app);
 
     sessionId = crypto.randomUUID();
     sessionDocRef = doc(collection(db, 'sessions'), sessionId);
