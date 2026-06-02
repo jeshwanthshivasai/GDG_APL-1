@@ -3,6 +3,7 @@
  */
 
 import { CameraManager } from './camera.js';
+import { inject } from '@vercel/analytics';
 import { VoiceManager } from './voice.js';
 import { initGemini, analyzeWithVoiceAndCamera, analyzeVoiceOnly, isReady, setGeminiModel } from './gemini.js';
 import { speakWithSarvam, stopSarvamAudio } from './sarvam.js';
@@ -582,6 +583,7 @@ function setupAppButtons() {
 // ─── Bootstrap ────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
+  inject();
   applyTheme(localStorage.getItem('daiy_theme') || 'dark');
   setupAuthUI();
   setupUserDropdown();
