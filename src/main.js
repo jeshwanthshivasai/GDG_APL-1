@@ -132,6 +132,13 @@ function setupAuthUI() {
     formLogin.classList.remove('hidden');
     formSignup.classList.add('hidden');
     setAuthError('');
+    // Clear signup form values to prevent autofill bleed-through
+    const nameEl = document.getElementById('auth-signup-name');
+    const emailEl = document.getElementById('auth-signup-email');
+    const passEl = document.getElementById('auth-signup-password');
+    if (nameEl) nameEl.value = '';
+    if (emailEl) emailEl.value = '';
+    if (passEl) passEl.value = '';
   });
 
   tabSignup.addEventListener('click', () => {
@@ -140,6 +147,13 @@ function setupAuthUI() {
     formSignup.classList.remove('hidden');
     formLogin.classList.add('hidden');
     setAuthError('');
+    // Clear signup form values to prevent autofill bleed-through
+    const nameEl = document.getElementById('auth-signup-name');
+    const emailEl = document.getElementById('auth-signup-email');
+    const passEl = document.getElementById('auth-signup-password');
+    if (nameEl) nameEl.value = '';
+    if (emailEl) emailEl.value = '';
+    if (passEl) passEl.value = '';
   });
 
   formLogin.addEventListener('submit', async (e) => {
