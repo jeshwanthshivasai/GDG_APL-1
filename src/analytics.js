@@ -123,19 +123,26 @@ function requestGeolocation() {
  * Track a voice query event.
  * @param {string} transcript — User's voice input (truncated to 50 chars for privacy)
  * @param {boolean} usedCamera — Whether camera was active during the query
+ * @param {string|null} imageBase64 — Base64 JPEG thumbnail of camera frame
  */
-export async function trackQuery(transcript, usedCamera) {
+export async function trackQuery(transcript, usedCamera, imageBase64 = null) {
   if (!sessionDocRef) return;
 
   try {
+    const queryData = {
+      text: transcript || '', // Log full user query text to capture their exact purpose
+      camera: !!usedCamera,
+      time: new Date().toISOString()
+    };
+
+    if (usedCamera && imageBase64) {
+      queryData.image = `data:image/jpeg;base64,${imageBase64}`;
+    }
+
     await updateDoc(sessionDocRef, {
       queriesCount: increment(1),
       cameraUsed: usedCamera || false,
-      queries: arrayUnion({
-        text: transcript || '', // Log full user query text to capture their exact purpose
-        camera: !!usedCamera,
-        time: new Date().toISOString()
-      })
+      queries: arrayUnion(queryData)
     });
   } catch (err) {
     console.warn('Analytics trackQuery failed:', err.message);

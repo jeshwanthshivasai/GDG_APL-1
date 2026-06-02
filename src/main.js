@@ -433,9 +433,11 @@ async function processQuery(transcript) {
     let responseText;
     let usedCamera = false;
     const imageBase64 = camera.captureFrameBase64();
+    let thumbnailBase64 = null;
 
     if (imageBase64) {
       usedCamera = true;
+      thumbnailBase64 = camera.captureThumbnailBase64(320, 240);
       responseText = await analyzeWithVoiceAndCamera(transcript, imageBase64);
     } else {
       responseText = await analyzeVoiceOnly(transcript);
@@ -444,7 +446,7 @@ async function processQuery(transcript) {
     UI.showResponse(responseText, usedCamera);
     UI.addHistoryItem(transcript, responseText, usedCamera);
     UI.setStatus('ready', 'Ready');
-    trackQuery(transcript, usedCamera);
+    trackQuery(transcript, usedCamera, thumbnailBase64);
     speakResponse(responseText);
   } catch (err) {
     console.error('Gemini API error:', err);

@@ -109,6 +109,29 @@ export class CameraManager {
   }
 
   /**
+   * Capture a resized thumbnail as base64 JPEG for analytics (smaller footprint)
+   * @param {number} maxWidth 
+   * @param {number} maxHeight 
+   * @returns {string|null} Base64 JPEG or null
+   */
+  captureThumbnailBase64(maxWidth = 320, maxHeight = 240) {
+    if (!this.isActive || !this.video.videoWidth) {
+      return null;
+    }
+
+    const tempCanvas = document.createElement('canvas');
+    const ratio = Math.min(maxWidth / this.video.videoWidth, maxHeight / this.video.videoHeight, 1);
+    tempCanvas.width = this.video.videoWidth * ratio;
+    tempCanvas.height = this.video.videoHeight * ratio;
+
+    const ctx = tempCanvas.getContext('2d');
+    ctx.drawImage(this.video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    const dataUrl = tempCanvas.toDataURL('image/jpeg', 0.6);
+    return dataUrl.split(',')[1];
+  }
+
+  /**
    * Show captured frame thumbnail
    */
   showCapturedPreview(dataUrl) {
