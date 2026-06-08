@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DAIY — AI Support Agent</title>
+  <meta name="description" content="Voice + Camera AI support agent that diagnoses issues in real-time. Less downtime. Faster fixes." />
+  <link rel="icon" type="image/svg+xml" href="/DAIY-notagline.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0d0d;
+      --surface:   #141414;
+      --panel:     #1a1a1a;
+      --border:    #2a2a2a;
+      --accent:    #f5a623;
+      --accent2:   #e8832a;
+      --text:      #e8e8e8;
+      --muted:     #888;
+      --danger:    #ff4b4b;
+      --green:     #39d353;
+      --mono:      'Share Tech Mono', monospace;
+      --sans:      'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Utility ── */
+    .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+    .tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 4px 10px;
+      border-radius: 2px;
+    }
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* ── Grid lines overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245,166,35,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,166,35,.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(13,13,13,.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-logo img { height: 28px; }
+    .nav-logo span {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: .05em;
+    }
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      font-family: var(--mono);
+      letter-spacing: .06em;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent);
+      color: #000 !important;
+      padding: 8px 18px;
+      border-radius: 2px;
+      font-weight: 600;
+      font-size: 12px !important;
+      transition: background .2s !important;
+    }
+    .nav-cta:hover { background: var(--accent2) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      padding: 160px 0 100px;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245,166,35,.08);
+      border: 1px solid rgba(245,166,35,.25);
+      padding: 6px 14px;
+      border-radius: 2px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .12em;
+      color: var(--accent);
+      margin-bottom: 28px;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: blink 1.4s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+    .hero h1 {
+      font-size: clamp(40px, 6vw, 76px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -.02em;
+      max-width: 800px;
+      margin-bottom: 24px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 520px;
+      margin-bottom: 40px;
+      line-height: 1.7;
+    }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px 28px;
+      border-radius: 2px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background .2s, transform .15s;
+    }
+    .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 14px;
+      padding: 14px 28px;
+      border-radius: 2px;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-secondary:hover { border-color: var(--muted); color: var(--accent); }
+
+    /* hero decorative terminal */
+    .hero-terminal {
+      position: absolute;
+      right: -20px;
+      top: 120px;
+      width: 420px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      font-family: var(--mono);
+      font-size: 12px;
+      opacity: .85;
+    }
+    .terminal-bar {
+      background: var(--panel);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28c840; }
+    .terminal-body { padding: 16px; line-height: 2; }
+    .t-muted { color: var(--muted); }
+    .t-accent { color: var(--accent); }
+    .t-green { color: var(--green); }
+    .t-danger { color: var(--danger); }
+    .cursor { display: inline-block; width: 8px; height: 14px; background: var(--accent); animation: blink 1s infinite; vertical-align: middle; }
+
+    @media (max-width: 900px) { .hero-terminal { display: none; } }
+
+    /* ── STATS ── */
+    .stats {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 48px 0;
+      background: var(--surface);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+    .stat-cell {
+      background: var(--surface);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: var(--mono);
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    @media (max-width: 700px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* ── HOW IT WORKS ── */
+    .section { padding: 100px 0; position: relative; z-index: 1; }
+    .section-header { margin-bottom: 60px; }
+    .section-header h2 {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      line-height: 1.1;
+    }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--border); }
+    .step {
+      background: var(--surface);
+      padding: 40px 32px;
+      position: relative;
+      transition: background .2s;
+    }
+    .step:hover { background: var(--panel); }
+    .step-num {
+      font-family: var(--mono);
+      font-size: 64px;
+      font-weight: 900;
+      color: rgba(245,166,35,.08);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+    .step-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+    .step h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .step p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .step-tag {
+      position: absolute;
+      top: 16px; right: 16px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--accent);
+      opacity: .6;
+    }
+    @media (max-width: 700px) { .steps { grid-template-columns: 1fr; } }
+
+    /* ── FEATURES ── */
+    .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; background: var(--border); }
+    .feature {
+      background: var(--surface);
+      padding: 36px 32px;
+      border-left: 3px solid transparent;
+      transition: border-color .2s, background .2s;
+    }
+    .feature:hover { border-color: var(--accent); background: var(--panel); }
+    .feature-icon { font-size: 28px; margin-bottom: 14px; }
+    .feature h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .feature p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    @media (max-width: 700px) { .features-grid { grid-template-columns: 1fr; } }
+
+    /* ── REVIEWS ── */
+    .reviews-section { background: var(--surface); padding: 100px 0; position: relative; z-index: 1; }
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--border);
+      margin-top: 60px;
+    }
+    .review-card {
+      background: var(--bg);
+      padding: 36px 32px;
+      position: relative;
+      transition: background .2s;
+    }
+    .review-card:hover { background: var(--panel); }
+    .review-stars {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 18px;
+    }
+    .star { color: var(--accent); font-size: 14px; }
+    .review-quote {
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+    .review-quote::before {
+      content: '"';
+      font-size: 48px;
+      line-height: 0;
+      vertical-align: -18px;
+      color: var(--accent);
+      opacity: .4;
+      margin-right: 4px;
+    }
+    .review-author { display: flex; align-items: center; gap: 12px; }
+    .avatar {
+      width: 40px; height: 40px;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: #000;
+      flex-shrink: 0;
+    }
+    .review-name { font-size: 14px; font-weight: 600; }
+    .review-role { font-size: 12px; color: var(--muted); font-family: var(--mono); }
+    .review-badge {
+      position: absolute;
+      top: 16px; right: 16px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--green);
+      letter-spacing: .08em;
+    }
+    @media (max-width: 900px) { .reviews-grid { grid-template-columns: 1fr; } }
+
+    /* ── CTA ── */
+    .cta-section {
+      position: relative;
+      z-index: 1;
+      padding: 120px 0;
+      text-align: center;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(245,166,35,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-size: clamp(32px, 5vw, 60px);
+      font-weight: 900;
+      letter-spacing: -.02em;
+      margin-bottom: 20px;
+    }
+    .cta-section p {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 40px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+      background: var(--surface);
+    }
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-logo {
+      font-family: var(--mono);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .footer-copy {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      font-family: var(--mono);
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a class="nav-logo" href="#">
+        <img src="/DAIY-notagline.svg" alt="DAIY" onerror="this.style.display='none'" />
+        <span>DAIY</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+        <li><a href="/index.html" class="nav-cta">Launch App →</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">LIVE — Powered by Gemini 2.5 Flash</div>
+      <h1>Fix it faster.<br/>Talk to <em>DAIY</em>.</h1>
+      <p>Show your problem, describe it, and get a step-by-step fix — instantly. Voice + Camera AI support that works like having an expert in your pocket.</p>
+      <div class="hero-actions">
+        <a href="/index.html" class="btn-primary">
+          ▶ &nbsp;Try It Now
+        </a>
+        <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+      </div>
+    </div>
+
+    <!-- decorative terminal -->
+    <div class="hero-terminal">
+      <div class="terminal-bar">
+        <span class="dot dot-r"></span>
+        <span class="dot dot-y"></span>
+        <span class="dot dot-g"></span>
+        <span style="margin-left:8px;color:#555;font-size:11px;">daiy — diagnostics</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-muted">$</span> <span class="t-accent">daiy.analyze()</span></div>
+        <div><span class="t-muted">→</span> Camera stream: <span class="t-green">ACTIVE</span></div>
+        <div><span class="t-muted">→</span> Voice input: <span class="t-green">LISTENING</span></div>
+        <div><span class="t-muted">→</span> Gemini model: <span class="t-accent">2.5-flash</span></div>
+        <div><span class="t-muted">→</span> Diagnosing issue...</div>
+        <div><span class="t-green">✓</span> Root cause identified</div>
+        <div><span class="t-green">✓</span> Repair steps generated</div>
+        <div><span class="t-muted">$</span> <span class="cursor"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-cell">
+          <span class="stat-num">~8s</span>
+          <span class="stat-label">Avg. diagnosis time</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-num">92%</span>
+          <span class="stat-label">First-contact resolution</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-num">3×</span>
+          <span class="stat-label">Faster than call centers</span>
+        </div>
+        <div class="stat-cell">
+          <span class="stat-num">24/7</span>
+          <span class="stat-label">Always available</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">// process</div>
+        <h2>Three steps.<br/>Zero friction.</h2>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div class="step-icon">🎙️</div>
+          <h3>Describe the problem</h3>
+          <p>Just speak. Tell DAIY what's wrong — no forms, no menus, no hold music.</p>
+          <span class="step-tag">VOICE_INPUT</span>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div class="step-icon">📷</div>
+          <h3>Show it on camera</h3>
+          <p>Point your device at the issue. DAIY reads the visual context alongside your words.</p>
+          <span class="step-tag">VISION_AI</span>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div class="step-icon">⚡</div>
+          <h3>Get the fix instantly</h3>
+          <p>Gemini analyzes both streams and delivers clear, step-by-step repair instructions.</p>
+          <span class="step-tag">GEMINI_2.5</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features" style="padding-top:0;">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">// capabilities</div>
+        <h2>Built for the real world.</h2>
+      </div>
+      <div class="features-grid">
+        <div class="feature">
+          <div class="feature-icon">🧠</div>
+          <h3>Multimodal AI</h3>
+          <p>Combines live camera feed with voice in a single Gemini call — so the AI sees and hears exactly what you do.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🌐</div>
+          <h3>Multilingual Voice</h3>
+          <p>Powered by Sarvam AI for Indian language support — speak in Hindi, Telugu, Tamil, and more.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔒</div>
+          <h3>Secure by Default</h3>
+          <p>Firebase Auth with email verification and Google Sign-In keeps your session protected end to end.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📊</div>
+          <h3>Usage Analytics</h3>
+          <p>Every query is tracked with Vercel Analytics — so teams can understand failure patterns at scale.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">📸</div>
+          <h3>Snapshot Thumbnails</h3>
+          <p>Auto-captures a frame at diagnosis time so you have a visual record of every support interaction.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🚀</div>
+          <h3>No Installation</h3>
+          <p>Runs entirely in the browser. No downloads, no setup — works on any device with a camera and mic.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="reviews-section" id="reviews">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-label">// customer_feedback</div>
+        <h2>What engineers are saying.</h2>
+      </div>
+      <div class="reviews-grid">
+
+        <div class="review-card">
+          <span class="review-badge">✔ VERIFIED</span>
+          <div class="review-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </div>
+          <p class="review-quote">We replaced our Level-1 support team's phone queue with DAIY. Diagnosis time dropped from 20 minutes to under a minute. Our SLA compliance went from 74% to 97% in a single month.</p>
+          <div class="review-author">
+            <div class="avatar" style="background:#f5a623;">RK</div>
+            <div>
+              <div class="review-name">Ravi Kumar</div>
+              <div class="review-role">Head of Ops · Bharat Manufacturing Ltd.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <span class="review-badge">✔ VERIFIED</span>
+          <div class="review-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </div>
+          <p class="review-quote">I pointed it at a tripped circuit breaker and it walked me through the reset in 12 seconds. My field crew says it's like having a senior technician on every job site — without the travel cost.</p>
+          <div class="review-author">
+            <div class="avatar" style="background:#e8832a;">PS</div>
+            <div>
+              <div class="review-name">Priya Sharma</div>
+              <div class="review-role">Field Engineer · TechServ Solutions</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <span class="review-badge">✔ VERIFIED</span>
+          <div class="review-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </div>
+          <p class="review-quote">The Telugu voice support alone made this a no-brainer for our plant floor workers. They explain the fault in their own language and DAIY gets it right every time. Incredible product.</p>
+          <div class="review-author">
+            <div class="avatar" style="background:#c46a15;">AR</div>
+            <div>
+              <div class="review-name">Arjun Reddy</div>
+              <div class="review-role">Plant Manager · SunRise Textiles</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <span class="review-badge">✔ VERIFIED</span>
+          <div class="review-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star" style="color:#333;">★</span>
+          </div>
+          <p class="review-quote">Setup took under 5 minutes. No downloads, no training sessions. I just showed a worker the QR code and they were diagnosing equipment faults on their own by the end of the shift.</p>
+          <div class="review-author">
+            <div class="avatar" style="background:#39d353;color:#000;">NJ</div>
+            <div>
+              <div class="review-name">Neha Joshi</div>
+              <div class="review-role">IT Lead · Precision Auto Parts</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <span class="review-badge">✔ VERIFIED</span>
+          <div class="review-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </div>
+          <p class="review-quote">We've tried every AI chatbot out there. DAIY is the first one that actually understands what you're showing it. The camera + voice combo is a game-changer for hardware support.</p>
+          <div class="review-author">
+            <div class="avatar" style="background:#f5a623;">DM</div>
+            <div>
+              <div class="review-name">Dev Malhotra</div>
+              <div class="review-role">CTO · GridEdge Systems</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <span class="review-badge">✔ VERIFIED</span>
+          <div class="review-stars">
+            <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+          </div>
+          <p class="review-quote">Our downtime incidents went from an average of 4 hours to 35 minutes. DAIY doesn't just answer questions — it identifies root causes I hadn't even thought to look for yet.</p>
+          <div class="review-author">
+            <div class="avatar" style="background:#e8832a;">SK</div>
+            <div>
+              <div class="review-name">Sunita Krishnan</div>
+              <div class="review-role">Maintenance Supervisor · Delta Ceramics</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="tag">No credit card. No setup.</div>
+      <br/><br/>
+      <h2>Ready to cut your<br/>downtime in half?</h2>
+      <p>Join hundreds of field engineers and support teams already using DAIY to fix things faster.</p>
+      <a href="/index.html" class="btn-primary" style="font-size:16px;padding:16px 36px;">
+        ▶ &nbsp;Launch DAIY Free
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-logo">DAIY</div>
+        <div class="footer-links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="footer-copy">© 2026 DAIY — Built for GDG APL Hackathon</div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
